@@ -29,12 +29,12 @@ To assess the reliability and robustness of DPRankNet, we employ 5-fold cross-va
 
 ### 1.Comparison results with state-of-the-art methods
 
-![](figures/sota.PNG)
+![](figures/sota.png)
 
 ### 2. Evaluation of Feature Space Geometry
 We introduce the Distance Ratio (DR), a relative scale-invariant measure designed to assess the geometric quality of the latent space.
 
-![](figures/efsg.PNG)
+![](figures/efsg.png)
 
 ### 3. Ablation Study
 
