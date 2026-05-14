@@ -81,7 +81,7 @@ def evaluate_2(confusion_matrix, TN_ind, pred, gt, n_classes):
 
 def main():
     classes = get_classes(r"D:\DJC\dataset")
-    root_dir = r"D:\DJC\test\cm"  # 根目录
+    root_dir = r"D:\DJC\test"  # 根目录
     csv_file = r"D:\DJC\test\hard_pro\results_noisy.csv"  # 统一的结果文件
     test_data_path = r'D:\DJC\Ablation\ADNI_data_notest_age\AIBL.csv'
     batch_size = 12
@@ -151,65 +151,65 @@ def main():
             # 2. 提取出每个样本【真实标签】对应的预测概率
             total_samples = gts_roc.size(0)
             indices = torch.arange(total_samples)
-            prob_true = probs[indices, gts_roc]
+            # prob_true = probs[indices, gts_roc]
 
             # 3. 提取出每个样本【其他类别】的最大预测概率
             probs_other = probs.clone()
             probs_other[indices, gts_roc] = -1.0
-            max_other_prob, _ = torch.max(probs_other, dim=1)
+            # max_other_prob, _ = torch.max(probs_other, dim=1)
 
             # 4. 根据条件进行全局布尔判断
-            is_easy = prob_true >= 0.7
-            is_hard = (prob_true < 0.7) & (max_other_prob <= 0.6)
-            is_noisy = ~(is_easy | is_hard)
+            # is_easy = prob_true >= 0.7
+            # is_hard = (prob_true < 0.7) & (max_other_prob <= 0.6)
+            # is_noisy = ~(is_easy | is_hard)
 
             # 5. 分类别统计数量 (0: AD, 1: MCI, 2: NC)
-            class_names = ['AD', 'MCI', 'NC']
-            stats_dict = {}
+            # class_names = ['AD', 'MCI', 'NC']
+            # stats_dict = {}
 
-            print("Sample Stats per Class:")
-            for i, c_name in enumerate(class_names):
-                # 找出真实标签为当前类别的样本掩码
-                class_mask = (gts_roc == i)
+            # print("Sample Stats per Class:")
+            # for i, c_name in enumerate(class_names):
+            #     # 找出真实标签为当前类别的样本掩码
+            #     class_mask = (gts_roc == i)
 
-                # 结合全局条件和当前类别掩码进行统计 (逻辑与 &)
-                c_easy = (is_easy & class_mask).sum().item()
-                c_hard = (is_hard & class_mask).sum().item()
-                c_noisy = (is_noisy & class_mask).sum().item()
+            #     # 结合全局条件和当前类别掩码进行统计 (逻辑与 &)
+            #     c_easy = (is_easy & class_mask).sum().item()
+            #     c_hard = (is_hard & class_mask).sum().item()
+            #     c_noisy = (is_noisy & class_mask).sum().item()
 
-                # 存入字典以备写入 CSV
-                stats_dict[c_name] = {'Easy': c_easy, 'Hard': c_hard, 'Noisy': c_noisy}
-                print(f"  {c_name} -> Easy: {c_easy}, Hard: {c_hard}, Noisy: {c_noisy}")
+            #     # 存入字典以备写入 CSV
+            #     stats_dict[c_name] = {'Easy': c_easy, 'Hard': c_hard, 'Noisy': c_noisy}
+            #     print(f"  {c_name} -> Easy: {c_easy}, Hard: {c_hard}, Noisy: {c_noisy}")
             # 逐行写入矩阵数据
-            mci_hard_mask = (gts_roc == 1) & is_hard
+            # mci_hard_mask = (gts_roc == 1) & is_hard
 
             # 2. 从所有的概率张量中提取出这些符合条件的样本概率
-            mci_hard_probs = probs[mci_hard_mask]
+            # mci_hard_probs = probs[mci_hard_mask]
 
             # 3. 将结果写入 CSV
-            with open(csv_file, 'a', newline='') as f:
-                writer = csv.writer(f)
+            # with open(csv_file, 'a', newline='') as f:
+            #     writer = csv.writer(f)
 
-                # 写入当前模型路径作为标识，方便区分不同模型的输出
-                writer.writerow([f"Model: {os.path.basename(pth_path)}"])
+            #     # 写入当前模型路径作为标识，方便区分不同模型的输出
+            #     writer.writerow([f"Model: {os.path.basename(pth_path)}"])
 
-                # 如果该模型下有 MCI_hard 样本，则写入具体概率
-                if mci_hard_probs.size(0) > 0:
-                    writer.writerow(['Sample_Type', 'Prob_AD', 'Prob_MCI', 'Prob_NC'])
+            #     # 如果该模型下有 MCI_hard 样本，则写入具体概率
+            #     if mci_hard_probs.size(0) > 0:
+            #         writer.writerow(['Sample_Type', 'Prob_AD', 'Prob_MCI', 'Prob_NC'])
 
-                    # 遍历并写入每一个 MCI hard 样本的三类概率（保留4位小数）
-                    for p in mci_hard_probs:
-                        writer.writerow([
-                            'MCI_Hard',
-                            f"{p[0].item():.4f}",  # 预测为 AD 的概率
-                            f"{p[1].item():.4f}",  # 预测为 MCI 的概率
-                            f"{p[2].item():.4f}"  # 预测为 NC 的概率
-                        ])
-                else:
-                    writer.writerow(['No MCI_Hard samples found for this model.'])
+            #         # 遍历并写入每一个 MCI hard 样本的三类概率（保留4位小数）
+            #         for p in mci_hard_probs:
+            #             writer.writerow([
+            #                 'MCI_Hard',
+            #                 f"{p[0].item():.4f}",  # 预测为 AD 的概率
+            #                 f"{p[1].item():.4f}",  # 预测为 MCI 的概率
+            #                 f"{p[2].item():.4f}"  # 预测为 NC 的概率
+            #             ])
+            #     else:
+            #         writer.writerow(['No MCI_Hard samples found for this model.'])
 
-                # 写入一个空行，作为不同模型之间的视觉分隔
-                writer.writerow([])
+            #     # 写入一个空行，作为不同模型之间的视觉分隔
+            #     writer.writerow([])
             # with open(csv_file, 'a', newline='') as f:
             #     writer = csv.writer(f)
             #     writer.writerow([pth_path])
@@ -219,29 +219,29 @@ def main():
 
                 # 3. 写入一个空行，作为不同模型之间的视觉分隔
                 # writer.writerow([])
-            # ACC, SPE, SEN, PRE, F1, MCC, kappa, ROC = evaluate(confusion_matrix, preds_roc, gts_roc, 3)
-            # SPE_2, SEN_2, PRE_2, F1_2, MCC_2, ROC_2 = evaluate_2(confusion_matrix, 2, preds_roc, gts_roc, 3)
+            ACC, SPE, SEN, PRE, F1, MCC, kappa, ROC = evaluate(confusion_matrix, preds_roc, gts_roc, 3)
+            SPE_2, SEN_2, PRE_2, F1_2, MCC_2, ROC_2 = evaluate_2(confusion_matrix, 2, preds_roc, gts_roc, 3)
 
             # 写入结果
-            # with open(csv_file, 'a', newline='') as f:
-            #     writer = csv.writer(f)
-            #     writer.writerow([
-            #         pth_path,
-            #         round(ACC.item(), 4),
-            #         round(SPE.item(), 4),
-            #         round(SEN.item(), 4),
-            #         round(PRE.item(), 4),
-            #         round(F1.item(), 4),
-            #         round(kappa.item(), 4),
-            #         round(ROC, 4),
-            #         round(MCC.item(), 4),
-            #         round(SPE_2.item(), 4),
-            #         round(SEN_2.item(), 4),
-            #         round(PRE_2.item(), 4),
-            #         round(F1_2.item(), 4),
-            #         round(ROC_2, 4),
-            #         round(MCC_2.item(), 4)
-            #     ])
+            with open(csv_file, 'a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    pth_path,
+                    round(ACC.item(), 4),
+                    round(SPE.item(), 4),
+                    round(SEN.item(), 4),
+                    round(PRE.item(), 4),
+                    round(F1.item(), 4),
+                    round(kappa.item(), 4),
+                    round(ROC, 4),
+                    round(MCC.item(), 4),
+                    round(SPE_2.item(), 4),
+                    round(SEN_2.item(), 4),
+                    round(PRE_2.item(), 4),
+                    round(F1_2.item(), 4),
+                    round(ROC_2, 4),
+                    round(MCC_2.item(), 4)
+                ])
 
             # for i, key in enumerate(preds_list):
             #     for j, k in enumerate(preds_list[i]):
